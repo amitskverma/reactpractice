@@ -1,0 +1,71 @@
+name: Create Azure Web App & Deploy React App
+
+on:
+  push:
+    branches:
+      - main  # Change if your deploy branch is different
+
+env:
+  AZURE_SUBSCRIPTION_ID: c8f0f5fd-35e6-4eec-a6b5-6bbb2ece0fa8
+  AZURE_RESOURCE_GROUP: rg-eshoponweb
+  AZURE_LOCATION: westus2
+  AZURE_APP_SERVICE_PLAN: appserviceplan-eshoponweb-webapp50232344
+  AZURE_APP_NAME: my-react-app-1234-shiv
+  NODE_VERSION: '18'
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build React app
+        run: npm run build
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set default subscription
+        run: |
+          az account set --subscription $AZURE_SUBSCRIPTION_ID
+
+      - name: Create resource group (if not exists)
+        run: |
+          az group create \
+            --name $AZURE_RESOURCE_GROUP \
+            --location $AZURE_LOCATION
+
+      - name: Create App Service plan (if not exists)
+        run: |
+          az appservice plan create \
+            --name $AZURE_APP_SERVICE_PLAN \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --sku FREE \
+            --is-linux
+
+      - name: Create Web App (if not exists)
+        run: |
+          az webapp create \
+            --name $AZURE_APP_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --plan $AZURE_APP_SERVICE_PLAN \
+            --runtime "NODE|18-lts" \
+            --deployment-local-git
+
+      - name: Deploy React app to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_APP_NAME }}
+          package: ./build
