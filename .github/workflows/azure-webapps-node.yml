@@ -9,7 +9,6 @@ env:
   AZURE_SUBSCRIPTION_ID: c8f0f5fd-35e6-4eec-a6b5-6bbb2ece0fa8
   AZURE_RESOURCE_GROUP: rg-eshoponweb
   AZURE_LOCATION: westus2
-  AZURE_APP_SERVICE_PLAN: appserviceplan-eshoponweb-webapp50232344
   AZURE_APP_NAME: my-react-app-1234-shiv
   NODE_VERSION: '18'
 
